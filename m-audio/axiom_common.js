@@ -21,24 +21,26 @@
  * @param {number} y
  * @param {number} w
  * @param {number} h
- * @param {array}  cc
  * @param {MR_DeviceMidiInput} midiInput
  * @param {MR_DeviceMidiOutput} midiOutput
  * @returns {Object}
  */
-function makeFaders(/** @type {MR_DeviceSurface} */surface, x, y, w, h, cc, midiInput, midiOutput, surfaceElements) {
+function makeFaders(/** @type {MR_DeviceSurface} */surface, x, y, w, h, faderInfo, midiInput, midiOutput, surfaceElements) {
 
   var faders = {}
-  surfaceElements.numFaders = cc.length
+  surfaceElements.numFaders = faderInfo.num
 
   for (var i = 0; i < surfaceElements.numFaders; i++) {
     faders[i] = surface.makeFader(x + 2.25*i, y, w, h)
+    console.log(faderInfo.type[i])
+    var ch = faderInfo.value[i]
+    console.log(ch.toString())
     faders[i].mSurfaceValue.mMidiBinding
       .setInputPort(midiInput)
-      .bindToControlChange (0, cc[i])
+      .bindToControlChange (faderInfo.channel[i], faderInfo.value[i])
   }
   surfaceElements.faders = faders
-  surfaceElements.ccFaderValues = cc
+  surfaceElements.ccFaderValues = faderInfo.value
 }
 
 
@@ -50,25 +52,25 @@ function makeFaders(/** @type {MR_DeviceSurface} */surface, x, y, w, h, cc, midi
  * @param {number} y
  * @param {number} w
  * @param {number} h
- * @param {array}  cc
  * @param {MR_DeviceMidiInput} midiInput
  * @param {MR_DeviceMidiOutput} midiOutput
  * @returns {Object}
  */
-function makeButtons(surface, x, y, w, h, cc, midiInput, midiOutput, surfaceElements) {
+function makeButtons(surface, x, y, w, h, buttonInfo, midiInput, midiOutput, surfaceElements) {
 
   var buttons = {}
-  surfaceElements.numButtons = cc.length
+  surfaceElements.numButtons = buttonInfo.num
+
   
   for (var i = 0; i < surfaceElements.numButtons; i++) {
     buttons[i] = surface.makeButton(x + 2.25*i, y, w, h)
     buttons[i].setShapeCircle()
     buttons[i].mSurfaceValue.mMidiBinding
       .setInputPort(midiInput)
-      .bindToControlChange (0, cc[i])
+      .bindToControlChange (buttonInfo.channel[i], buttonInfo.value[i])
   }
   surfaceElements.buttons = buttons
-  surfaceElements.ccButtonValues = cc
+  surfaceElements.ccButtonValues = buttonInfo.value
 }
   
 
@@ -80,15 +82,14 @@ function makeButtons(surface, x, y, w, h, cc, midiInput, midiOutput, surfaceElem
  * @param {number} y
  * @param {number} w
  * @param {number} h
- * @param {array}  cc
  * @param {MR_DeviceMidiInput} midiInput
  * @param {MR_DeviceMidiOutput} midiOutput
  * @returns {Object}
  */
- function makeKnobs(/** @type {MR_DeviceSurface} */surface, x, y, w, h, cc, midiInput, midiOutput, surfaceElements) {
+ function makeKnobs(/** @type {MR_DeviceSurface} */surface, x, y, w, h, knobInfo, midiInput, midiOutput, surfaceElements) {
 
   var knobs = {}
-  surfaceElements.numKnobs = cc.length
+  surfaceElements.numKnobs = knobInfo.num
 
   for (var i = 0; i < surfaceElements.numKnobs; i++) {
     if (i < surfaceElements.numKnobs/2) {
@@ -101,11 +102,11 @@ function makeButtons(surface, x, y, w, h, cc, midiInput, midiOutput, surfaceElem
     }
     knobs[i].mSurfaceValue.mMidiBinding
       .setInputPort(midiInput)
-      .bindToControlChange (0, cc[i])
+      .bindToControlChange (knobInfo.channel[i], knobInfo.value[i])
       .setTypeRelativeTwosComplement()
   }
   surfaceElements.knobs = knobs
-  surfaceElements.ccKnobValues = cc
+  surfaceElements.ccKnobValues = knobInfo.value
 }
 
   
@@ -117,14 +118,13 @@ function makeButtons(surface, x, y, w, h, cc, midiInput, midiOutput, surfaceElem
  * @param {number} y
  * @param {number} w
  * @param {number} h
- * @param {array} cc
  * @param {MR_DeviceMidiInput} midiInput
  * @param {MR_DeviceMidiOutput} midiOutput
  * @returns {Object}
  */
- function makeTransport(surface, x, y, w, h, cc,  midiInput, midiOutput, surfaceElements) {
+ function makeTransport(surface, x, y, w, h, transportInfo,  midiInput, midiOutput, surfaceElements) {
 
-	surfaceElements.numButtons = 6
+	surfaceElements.numButtons = transportInfo.num
 	surfaceElements.transport = {}
 
   function bindMidiCC(button, chn, val) {
@@ -137,39 +137,39 @@ function makeButtons(surface, x, y, w, h, cc, midiInput, midiOutput, surfaceElem
     switch (i) {
       case 0:
         surfaceElements.transport.btnCycle = surface.makeButton(x + 1.5 * i, y, w, h)
-        surfaceElements.transport.ccValueCycle = cc[i]
-        bindMidiCC(surfaceElements.transport.btnCycle, 0, surfaceElements.transport.ccValueCycle)
+        surfaceElements.transport.ccValueCycle = transportInfo.value[i]
+        bindMidiCC(surfaceElements.transport.btnCycle, transportInfo.channel[i], surfaceElements.transport.ccValueCycle)
         break;
   
       case 1:
         surfaceElements.transport.btnRewind = surface.makeButton(x + 1.5 * i, y, w, h)
-        surfaceElements.transport.ccValueRewind = cc[i]
-        bindMidiCC(surfaceElements.transport.btnRewind, 0, surfaceElements.transport.ccValueRewind)
+        surfaceElements.transport.ccValueRewind = transportInfo.value[i]
+        bindMidiCC(surfaceElements.transport.btnRewind, transportInfo.channel[i], surfaceElements.transport.ccValueRewind)
         break;
   
       case 2:
         surfaceElements.transport.btnForward = surface.makeButton(x + 1.5 * i, y, w, h)
-        surfaceElements.transport.ccValueForward = cc[i]
-        bindMidiCC(surfaceElements.transport.btnForward, 0, surfaceElements.transport.ccValueForward)
+        surfaceElements.transport.ccValueForward = transportInfo.value[i]
+        bindMidiCC(surfaceElements.transport.btnForward, transportInfo.channel[i], surfaceElements.transport.ccValueForward)
         break;
   
       case 3:
         surfaceElements.transport.btnStop = surface.makeButton(x + 1.5 * i, y, w, h)
-        surfaceElements.transport.ccValueStop = cc[i]
-        bindMidiCC(surfaceElements.transport.btnStop, 0, surfaceElements.transport.ccValueStop)
+        surfaceElements.transport.ccValueStop = transportInfo.value[i]
+        bindMidiCC(surfaceElements.transport.btnStop, transportInfo.channel[i], surfaceElements.transport.ccValueStop)
         break;
   
       case 4:
         surfaceElements.transport.btnStart = surface.makeButton(x + 1.5 * i, y, w, h)
-        surfaceElements.transport.ccValueStart = cc[i]
-        bindMidiCC(surfaceElements.transport.btnStart, 0, surfaceElements.transport.ccValueStart)
+        surfaceElements.transport.ccValueStart = transportInfo.value[i]
+        bindMidiCC(surfaceElements.transport.btnStart, transportInfo.channel[i], surfaceElements.transport.ccValueStart)
         break;
   
       case 5:
         surfaceElements.transport.btnRecord = surface.makeButton(x + 1.5 * i, y, w, h)
-        surfaceElements.transport.ccValueRecord = cc[i]
+        surfaceElements.transport.ccValueRecord = transportInfo.value[i]
         surfaceElements.transport.btnRecord.setShapeCircle()
-        bindMidiCC(surfaceElements.transport.btnRecord, 0, surfaceElements.transport.ccValueRecord)
+        bindMidiCC(surfaceElements.transport.btnRecord, transportInfo.channel[i], surfaceElements.transport.ccValueRecord)
         break;
     }
 	}
@@ -391,6 +391,201 @@ function makeActivationHandling(deviceDriver, sysex_object, midiOutput) {
   }
 }
 
+function getElementInfo (element) {
+
+  var elementBinding = {}
+  elementBinding.type
+  elementBinding.channel
+  elementBinding.value
+
+  var midiBind = "Unknown"
+  var midiValue = 0
+  var midiChannel = element.channel
+
+  if (element.midicc < 128) {
+    midiValue = element.midicc
+    midiBind = "MidiBindingToControlChange"
+  } else {
+      switch (element.type) {
+        case "transport":
+        case "button":
+          switch (element.midicc) {
+            case 131: // Channel Pressure
+            case 146: // MIDI CC (on/off)
+              midiValue = element.program // cc value
+              midiBind = "MidiBindingToControlChange"
+              break
+            case 147: // Note (on/off)
+              midiValue = element.program // note value
+              midiBind = "MidiBindingToNote"
+              break
+            case 148: // Note (on/off toggle)
+               midiValue = element.program // note value
+               midiBind = "MidiBindingToNote"
+               break
+            case 153: // MIDI CC Decrement
+              midiValue = element.program // cc value
+              midiBind = "MidiBindingToControlChange"
+              break
+            case 154: // MIDI CC Increment
+              midiValue = element.program // cc value
+              midiBind = "MidiBindingToControlChange"
+              break
+            default:
+              // Mode not supported
+              midiValue = 0
+              midiBind = "NotSupported"
+          }
+          break
+        
+        case "fader":
+          switch (element.midicc) {
+            default:
+              // Mode not supported
+              midiValue = 0
+              midiBind = "NotSupported"
+          }
+          break
+
+        case "knob":
+          switch (element.midicc) {
+            case 146: // 2’s comp from 64 / Relative (binary offset)
+            case 147: // 2’s comp from 0 / Relative (2’s comp)
+            case 148: // Sign Magnitude / Relative (signed bit)
+            case 149: // Sign Magnitude / Relative (signed bit 2)
+            case 150: // Single Value increment/decrement
+              midiValue = element.lsb // cc value
+              midiBind = "MidiBindingToControlChange"
+              break
+            case 151: // RPN increment/decrement message
+              midiValue = 96 // Inc RPN cc
+              midiBind = "MidiBindingToControlChange"
+              break
+            case 152: // NRPN increment/decrement message
+              midiValue = 96 // Inc NRPN cc
+              midiBind = "MidiBindingToControlChange"
+              break
+            default:
+              // Mode not supported
+              midiValue = 0
+              midiBind = "NotSupported"
+            }
+          break
+        case "pad":
+          switch (element.midicc) {
+            case 146: // MIDI CC (on/off)
+              midiValue = element.program // cc value
+              midiBind = "MidiBindingToControlChange"
+              break
+            case 147: // Note (on/off)
+              midiValue = element.program // note value
+              midiBind = "MidiBindingToNote"
+              break
+            case 148: // Note (on/off toggle)
+               midiValue = element.program // note value
+               midiBind = "MidiBindingToNote"
+               break
+            case 153: // MIDI CC Decrement
+              midiValue = element.program // cc value
+              midiBind = "MidiBindingToControlChange"
+              break
+            case 154: // MIDI CC Increment
+              midiValue = element.program // cc value
+              midiBind = "MidiBindingToControlChange"
+              break
+            default:
+              // Mode not supported
+              midiValue = 0
+              midiBind = "NotSupported"
+          }
+          break
+      }
+    }
+  elementBinding.type = midiBind
+  elementBinding.value = midiValue
+  elementBinding.channel = midiChannel
+  return elementBinding
+}
+
+
+function getBindingInfo(sysExGroups) {
+  var binding = {}
+  binding.fader = {}
+  binding.fader.type = []
+  binding.fader.value = []
+  binding.fader.channel = []
+  
+  binding.button = {}
+  binding.button.type = []
+  binding.button.value = []
+  binding.button.channel = []
+  
+  binding.knob = {}
+  binding.knob.type = []
+  binding.knob.value = []
+  binding.knob.channel = []
+  
+  binding.transport = {}
+  binding.transport.type = []
+  binding.transport.value = []
+  binding.transport.channel = []
+  
+  binding.pad = {}
+  binding.pad.type = []
+  binding.pad.value = []
+  binding.pad.channel = []
+  
+  //const groups         = sysexObject.groups
+  const numberOfGroups = sysExGroups.length
+  
+  // There are 2 sysex groups that contain the element information
+  for (var g = 0; g < 2; g++) {
+    var group    = sysExGroups[g]
+    var elements = group.elements
+    var numElements = elements.length
+    for (var i = 0; i < numElements; i++) {
+      var element = elements[i]
+  
+      var elementInfo = getElementInfo(element)
+      switch (element.type)
+      {
+        case "fader":
+          binding.fader.type[element.instance] = elementInfo.type
+          binding.fader.channel[element.instance] = elementInfo.channel
+          binding.fader.value[element.instance] = elementInfo.value
+          break
+        case "button":
+          binding.button.type[element.instance] = elementInfo.type
+          binding.button.channel[element.instance] = elementInfo.channel
+          binding.button.value[element.instance] = elementInfo.value
+          break
+        case "knob":
+          binding.knob.type[element.instance] = elementInfo.type
+          binding.knob.channel[element.instance] = elementInfo.channel
+          binding.knob.value[element.instance] = elementInfo.value
+          break
+        case "transport":
+          binding.transport.type[element.instance] = elementInfo.type
+          binding.transport.channel[element.instance] = elementInfo.channel
+          binding.transport.value[element.instance] = elementInfo.value
+          break
+        case "pad":
+          binding.pad.type[element.instance] = elementInfo.type
+          binding.pad.channel[element.instance] = elementInfo.channel
+          binding.pad.value[element.instance] = elementInfo.value
+          break
+      }
+    }
+  }
+  binding.fader.num     = binding.fader.type.length
+  binding.knob.num      = binding.knob.type.length
+  binding.button.num    = binding.button.type.length
+  binding.transport.num = binding.transport.type.length
+  binding.pad.num       = binding.pad.type.length
+  return binding
+}
+
+
 //-----------------------------------------------------------------------------
 // RETURN to require ----------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -401,5 +596,6 @@ module.exports = {
   makeTransport,
   makePads,
   makeActivationHandling,
-  makeHostMapping
+  makeHostMapping,
+  getBindingInfo
 }
